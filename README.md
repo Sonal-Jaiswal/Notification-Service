@@ -164,4 +164,4 @@ MIT License
 
 ## Contact
 
-For any queries or contributions, feel free to contact \[[your-email@example.com](mailto:your-email@example.com)] or raise an issue on the repository.
+For any queries or contributions, feel free to contact \[[vsonaljaiswal@gmail.com](mailto:vsonaljaiswal@gmail.com)] or raise an issue on the repository.

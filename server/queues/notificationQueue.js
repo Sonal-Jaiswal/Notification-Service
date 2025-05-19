@@ -2,16 +2,29 @@ const amqp = require('amqplib');
 const Notification = require('../models/Notification');
 const dispatcher = require('../services/notificationDispatcher');
 
-const QUEUE_NAME = 'notifications';
 let channel;
+
+const sendToQueue = async (notification) => {
+    try {
+        await channel.sendToQueue(
+            'notifications',
+            Buffer.from(JSON.stringify(notification)),
+            { persistent: true }
+        );
+        console.log('Notification sent to queue:', notification);
+    } catch (error) {
+        console.error('Error sending to queue:', error);
+        throw error;
+    }
+};
 
 async function connectQueue() {
     const conn = await amqp.connect(process.env.RABBITMQ_URI);
     channel = await conn.createChannel();
-    await channel.assertQueue(QUEUE_NAME);
+    await channel.assertQueue('notifications', { durable: true });
     console.log("Listening to queue...");
 
-    channel.consume(QUEUE_NAME, async (msg) => {
+    channel.consume('notifications', async (msg) => {
         const notification = JSON.parse(msg.content.toString());
         try {
             await dispatcher.dispatch(notification);
@@ -25,7 +38,15 @@ async function connectQueue() {
 }
 
 function publishToQueue(notification) {
-    return channel.sendToQueue(QUEUE_NAME, Buffer.from(JSON.stringify(notification)));
+    return channel.sendToQueue(
+        'notifications',
+        Buffer.from(JSON.stringify(notification)),
+        { persistent: true }
+    );
 }
 
-module.exports = { connectQueue, publishToQueue };
+module.exports = {
+    connectQueue,
+    sendToQueue,
+    publishToQueue
+};
